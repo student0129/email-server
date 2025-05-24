@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.static('public')); // If you want to serve the HTML from here too
 
 // Email transporter setup for Proton Mail
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: 'smtp.protonmail.ch',
   port: 587,
   secure: false, // true for 465, false for other ports
