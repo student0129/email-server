@@ -2,7 +2,7 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
-const ical = require('ical-generator');
+const ical = require('ical-generator').default;
 require('dotenv').config();
 
 const app = express();
@@ -60,31 +60,36 @@ app.post('/rsvp', async (req, res) => {
 
     console.log('📅 Creating calendar event...');
     
-    // CREATE CALENDAR EVENT (.ICS FILE)
-    const calendar = ical({
-      name: 'Edge Cases Soirée',
-      description: 'A soirée for those working seriously and semi-seriously on artificial intelligence'
-    });
-
-    calendar.createEvent({
-      start: new Date('2025-06-25T18:00:00-07:00'), // Added timezone
-      end: new Date('2025-06-25T21:00:00-07:00'),
-      summary: 'Edge Cases Soirée',
-      description: 'A soirée for those working seriously and semi-seriously on artificial intelligence. Come ready for off-record conversations about failures, foresight, and unfinished thoughts—over drinks.',
-      location: '[VENUE TBD]',
-      organizer: {
-        name: 'Promontory AI',
-        email: 'edgecases@promontoryai.com'
-      },
-      attendees: [{
-        name: name,
-        email: email,
-        status: 'TENTATIVE',
-        rsvp: true
-      }]
-    });
-
-    const icsContent = calendar.toString();
+    // CREATE CALENDAR EVENT (.ICS FILE) - Manual approach
+    const startDate = new Date('2025-06-25T18:00:00-07:00');
+    const endDate = new Date('2025-06-25T21:00:00-07:00');
+    
+    // Format dates for ICS (YYYYMMDDTHHMMSSZ)
+    const formatICSDate = (date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+    
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Edge Cases//Edge Cases Soiree//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:REQUEST',
+      'BEGIN:VEVENT',
+      `UID:edge-cases-soiree-${Date.now()}@promontoryai.com`,
+      `DTSTART:${formatICSDate(startDate)}`,
+      `DTEND:${formatICSDate(endDate)}`,
+      `DTSTAMP:${formatICSDate(new Date())}`,
+      'SUMMARY:Edge Cases Soirée',
+      'DESCRIPTION:A soirée for those working seriously and semi-seriously on artificial intelligence. Come ready for off-record conversations about failures\\, foresight\\, and unfinished thoughts—over drinks.',
+      'LOCATION:[VENUE TBD]',
+      'ORGANIZER;CN=Promontory AI:mailto:edgecases@promontoryai.com',
+      `ATTENDEE;CN=${name};RSVP=TRUE;PARTSTAT=TENTATIVE:mailto:${email}`,
+      'STATUS:CONFIRMED',
+      'TRANSP:OPAQUE',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
     console.log('✅ Calendar event created');
 
     // Email options with better formatting
