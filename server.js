@@ -14,8 +14,8 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Enhanced email transporter setup for Proton Mail
-const transport = nodemailer.createTransport({
-  host: 'smtp.protonmail.ch', // Updated host
+const transporter = nodemailer.createTransport({
+  host: 'mail.protonmail.ch', // Updated host
   port: 587,
   secure: false,
   auth: {
@@ -30,7 +30,7 @@ const transport = nodemailer.createTransport({
 });
 
 // Test transporter connection on startup
-transport.verify((error, success) => {
+transporter.verify((error, success) => {
   if (error) {
     console.error('❌ Email transporter verification failed:', error);
   } else {
