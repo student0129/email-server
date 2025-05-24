@@ -15,7 +15,7 @@ app.use(express.static('public')); // If you want to serve the HTML from here to
 
 // Email transporter setup for Proton Mail
 const transporter = nodemailer.createTransporter({
-  host: 'mail.protonmail.ch',
+  host: 'smtp.protonmail.ch',
   port: 587,
   secure: false, // true for 465, false for other ports
   auth: {
@@ -37,10 +37,36 @@ app.post('/rsvp', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Email to admin (ask@promontoryai.com)
+    // CREATE CALENDAR EVENT (.ICS FILE) - ADD THIS HERE
+    const calendar = ical({
+      name: 'Edge Cases Soirée',
+      description: 'A soirée for those working seriously and semi-seriously on artificial intelligence'
+    });
+
+    calendar.createEvent({
+      start: new Date('2025-06-25T18:00:00Z'), // Update with actual date
+      end: new Date('2025-06-25T21:00:00Z'),   // Update with actual date
+      summary: 'Edge Cases Soirée',
+      description: 'A soirée for those working seriously and semi-seriously on artificial intelligence...',
+      location: '[VENUE TBD]',
+      organizer: {
+        name: 'Promontory AI',
+        email: 'edgecases@promontoryai.com'
+      },
+      attendees: [{
+        name: name,
+        email: email,
+        status: 'TENTATIVE'
+      }]
+    });
+
+    const icsContent = calendar.toString();
+    // END OF CALENDAR CREATION
+
+    // Email to admin (edgecases@promontoryai.com)
     const adminEmailOptions = {
       from: process.env.EMAIL_USER,
-      to: 'ask@promontoryai.com',
+      to: 'edgecases@promontoryai.com',
       subject: `Edge Cases Soirée RSVP - ${name}`,
       html: `
         <h2>New RSVP for Edge Cases Soirée</h2>
@@ -52,7 +78,7 @@ app.post('/rsvp', async (req, res) => {
         
         <h3>Event Details:</h3>
         <p><strong>Event:</strong> Edge Cases Soirée - A soirée for those working seriously and semi-seriously on artificial intelligence</p>
-        <p><strong>Date:</strong> [DATE TBD]</p>
+        <p><strong>Date:</strong> Wednesday, June 25th, 2025</p>
         <p><strong>Time:</strong> 6:00 PM - 9:00 PM</p>
         <p><strong>Location:</strong> [VENUE TBD]</p>
         
@@ -74,7 +100,7 @@ app.post('/rsvp', async (req, res) => {
         <p><strong>You're confirmed as:</strong> ${role}</p>
         
         <h3>Event Details:</h3>
-        <p>📅 <strong>Date:</strong> [DATE TBD]</p>
+        <p>📅 <strong>Date:</strong> Wednesday, June 25th, 2025</p>
         <p>⏰ <strong>Time:</strong> 6:00 PM - 9:00 PM</p>
         <p>📍 <strong>Location:</strong> [VENUE TBD]</p>
         
@@ -85,8 +111,8 @@ app.post('/rsvp', async (req, res) => {
         <p>Looking forward to exploring the edge cases with you!</p>
         
         <p>Best,<br>
-        The Promontory AI Team<br>
-        ask@promontoryai.com</p>
+        The Edge Cases Team @ Promontory AI<br>
+        edgecases@promontoryai.com</p>
       `,
       attachments: [
         {
