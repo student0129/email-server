@@ -2,6 +2,7 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
+const ical = require('ical-generator');
 require('dotenv').config();
 
 const app = express();
@@ -12,12 +13,17 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public')); // If you want to serve the HTML from here too
 
-// Email transporter setup (using Gmail as example)
+// Email transporter setup for Proton Mail
 const transporter = nodemailer.createTransporter({
-  service: 'gmail',
+  host: 'mail.protonmail.ch',
+  port: 587,
+  secure: false, // true for 465, false for other ports
   auth: {
-    user: process.env.EMAIL_USER, // Your email
-    pass: process.env.EMAIL_PASS  // Your app password
+    user: process.env.EMAIL_USER, // Your Proton email address
+    pass: process.env.EMAIL_PASS  // Your Proton app password or Bridge password
+  },
+  tls: {
+    ciphers: 'SSLv3'
   }
 });
 
@@ -55,8 +61,6 @@ app.post('/rsvp', async (req, res) => {
     };
 
     // Confirmation email to attendee
-    const calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Edge Cases Soirée - AI Gathering')}&dates=20250625T180000Z/20250625T210000Z&details=${encodeURIComponent('A soirée for those working seriously and semi-seriously on artificial intelligence. For those who break AI, pretend to understand it, worry about what it will do, launch with fingers crossed, and clean up after the demo. Conversations about failures, foresight, and unfinished thoughts—over drinks.')}&location=${encodeURIComponent('[VENUE TBD]')}`;
-
     const confirmationEmailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -76,14 +80,21 @@ app.post('/rsvp', async (req, res) => {
         
         <p>This gathering is for those who break AI, pretend to understand it, worry about what it will do, launch with fingers crossed, and clean up after the demo. Come ready for off-record conversations about failures, foresight, and unfinished thoughts—over drinks.</p>
         
-        <p><a href="${calendarLink}" style="background: #333; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Add to Calendar</a></p>
+        <p><strong>Calendar:</strong> Please find the calendar invite attached (.ics file) that works with any calendar system.</p>
         
         <p>Looking forward to exploring the edge cases with you!</p>
         
         <p>Best,<br>
         The Promontory AI Team<br>
         ask@promontoryai.com</p>
-      `
+      `,
+      attachments: [
+        {
+          filename: 'Edge-Cases-Soiree.ics',
+          content: icsContent,
+          contentType: 'text/calendar; charset=utf-8; method=REQUEST'
+        }
+      ]
     };
 
     // Send both emails
