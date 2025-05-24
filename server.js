@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Enhanced email transporter setup for Proton Mail
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: 'mail.protonmail.ch', // Updated host
   port: 587,
   secure: false,
