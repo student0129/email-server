@@ -20,13 +20,20 @@ const limiter = rateLimit({
 
 app.use('/contact', limiter);
 
-// Email transporter configuration
-const transporter = nodemailer.createTransporter({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
+// Enhanced email transporter setup for Proton Mail
+const transporter = nodemailer.createTransport({
+  host: 'smtp.protonmail.ch', // Updated host
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false // More permissive for debugging
+  },
+  debug: true, // Enable debugging
+  logger: true // Enable logging
 });
 
 // Verify email configuration on startup
