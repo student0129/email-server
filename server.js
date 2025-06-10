@@ -47,7 +47,7 @@ app.get('/', (req, res) => {
 });
 
 // Contact form endpoint
-app.post('/contact', async (req, res) => {
+app.post('/email', async (req, res) => {
     console.log('📧 Contact request received:', req.body);
     
     try {
@@ -217,6 +217,6 @@ app.use((error, req, res, next) => {
 
 app.listen(PORT, () => {
     console.log(`🚀 Start Smart Contact Server running on port ${PORT}`);
-    console.log(`📧 Contact endpoint: POST /contact`);
+    console.log(`📧 Contact endpoint: POST /email`);
     console.log(`🔍 Health check: GET /`);
 });
