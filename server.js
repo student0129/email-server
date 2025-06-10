@@ -18,22 +18,17 @@ const limiter = rateLimit({
     message: 'Too many requests from this IP, please try again later.'
 });
 
-app.use('/contact', limiter);
+app.use('/email', limiter);
 
-// Enhanced email transporter setup for Proton Mail
-const transporter = nodemailer.createTransport({
-  host: 'smtp.protonmail.ch', // Updated host
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false // More permissive for debugging
-  },
-  debug: true, // Enable debugging
-  logger: true // Enable logging
+// Email transporter configuration
+const transporter = nodemailer.createTransporter({
+    host: 'smtp.protonmail.ch', // Updated host
+    port: 587,
+    secure: false, // Use STARTTLS
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
 });
 
 // Verify email configuration on startup
@@ -55,7 +50,7 @@ app.get('/', (req, res) => {
 
 // Contact form endpoint
 app.post('/email', async (req, res) => {
-    console.log('📧 Contact request received:', req.body);
+    console.log('📧 Email request received:', req.body);
     
     try {
         const { 
@@ -193,11 +188,11 @@ app.post('/email', async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Contact form submitted successfully'
+            message: 'Email sent successfully'
         });
 
     } catch (error) {
-        console.error('❌ Error processing contact form:', error);
+        console.error('❌ Error processing email request:', error);
         res.status(500).json({
             success: false,
             error: 'Internal server error'
@@ -224,6 +219,6 @@ app.use((error, req, res, next) => {
 
 app.listen(PORT, () => {
     console.log(`🚀 Start Smart Contact Server running on port ${PORT}`);
-    console.log(`📧 Contact endpoint: POST /email`);
+    console.log(`📧 Email endpoint: POST /email`);
     console.log(`🔍 Health check: GET /`);
 });
